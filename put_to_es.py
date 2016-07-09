@@ -6,11 +6,15 @@ import requests
 import secrets
 
 
-def put(endpoint, data=None):
-    resp = requests.put(
+def do_request(method, endpoint, data=None):
+    resp = getattr(requests, method)(
         '{}/stackexchange{}'.format(secrets.root_url, endpoint), data=json.dumps(data))
     print 'status:', resp.status_code
     print 'text:', resp.text
+
+
+def put(endpoint, data=None):
+    return do_request('put', endpoint, data=data)
 
 
 def put_settings():

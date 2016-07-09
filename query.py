@@ -2,7 +2,7 @@ import json
 
 import requests
 
-import settings
+import secrets
 
 
 data = {
@@ -12,5 +12,5 @@ data = {
     }
   }
 }
-resp = requests.post('{}/_search'.format(settings.root_url), data=json.dumps(data))
+resp = put_to_es.do_request('post', '{}/_search'.format(secrets.root_url), data)
 print resp.content
