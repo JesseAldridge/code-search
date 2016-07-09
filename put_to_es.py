@@ -51,11 +51,11 @@ def put_doc(doc_dict):
 class g:
     count = 10
 def xml_item_callback(_, outer_doc_dict):
-    if g.count <= 0:
-        return False
-    print 'count:', g.count
-    g.count -= 1
     for doc_dict in outer_doc_dict['row']:
+        if g.count <= 0:
+            return False
+        print 'count:', g.count
+        g.count -= 1
         put_doc(doc_dict)
     return True
 
