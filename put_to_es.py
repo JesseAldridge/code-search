@@ -3,12 +3,12 @@ import json
 import xmltodict
 import requests
 
-import settings
+import secrets
 
 
 def put(endpoint, data=None):
     resp = requests.put(
-        '{}/stackexchange{}'.format(settings.root_url, endpoint), data=json.dumps(data))
+        '{}/stackexchange{}'.format(secrets.root_url, endpoint), data=json.dumps(data))
     print 'status:', resp.status_code
     print 'text:', resp.text
 
@@ -32,10 +32,6 @@ def put_mappings():
     data = {
         "so_post": {
             "properties": {
-                # Each type has different configuration
-                # settings here, string is the most
-                # important
-                # mapping > types > core types
                 "Body": {"type": "string",
                          "store": "yes",
                          "index_analyzer": "html_text"},
@@ -44,7 +40,7 @@ def put_mappings():
             }
         }
     }
-    put('/so_post/_mapping'.format(settings.root_url), data)
+    put('/so_post/_mapping'.format(secrets.root_url), data)
 
 
 def put_doc(doc_dict):
@@ -52,17 +48,26 @@ def put_doc(doc_dict):
     put('/so_post/{}'.format(doc_dict['@Id']), data=doc)
 
 
+class g:
+    count = 10
+def xml_item_callback(_, outer_doc_dict):
+    if g.count <= 0:
+        return False
+    print 'count:', g.count
+    g.count -= 1
+    for doc_dict in outer_doc_dict['row']:
+        put_doc(doc_dict)
+    return True
+
 if __name__ == "__main__":
+    put('') # create index
+    print 'loading tree...'
     with open('test.xml') as f:
-        tree = xmltodict.parse(f.read())
-    put('')  # create index
+        tree = xmltodict.parse(f, item_depth=1, item_callback=xml_item_callback)
     # requests.post('http://localhost:9200/stackexchange/_close')
     # createCustomAnalyzer()
     # createMappings()
     # requests.post('http://localhost:9200/stackexchange/_open')
-
-    for doc_dict in tree['posts']['row']:
-        put_doc(doc_dict)
 
 
 # Adapted from:  https://github.com/o19s/StackExchangeElasticSearch/blob/master/postToEs.py
