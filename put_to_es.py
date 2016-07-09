@@ -63,3 +63,6 @@ if __name__ == "__main__":
 
     for doc_dict in tree['posts']['row']:
         put_doc(doc_dict)
+
+
+# Adapted from:  https://github.com/o19s/StackExchangeElasticSearch/blob/master/postToEs.py
