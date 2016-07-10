@@ -13,42 +13,38 @@ def do_request(method, endpoint, data=None):
     print 'text:', resp.text
 
 
-def put(endpoint, data=None):
-    return do_request('put', endpoint, data=data)
+# def put_settings():
+#     data = {
+#         "analysis": {
+#             "analyzer": {
+#                 "html_text": {
+#                     "tokenizer": "standard",
+#                     "filter": ["standard", "lowercase", "stop", "snowball"],
+#                     "char_filter": ["html_strip"]
+#                 }
+#             }
+#         }
+#     }
+#     do_request('put', '/_settings', data)
 
 
-def put_settings():
-    data = {
-        "analysis": {
-            "analyzer": {
-                "html_text": {
-                    "tokenizer": "standard",
-                    "filter": ["standard", "lowercase", "stop", "snowball"],
-                    "char_filter": ["html_strip"]
-                }
-            }
-        }
-    }
-    put('/_settings', data)
-
-
-def put_mappings():
-    data = {
-        "so_post": {
-            "properties": {
-                "Body": {"type": "string",
-                         "store": "yes",
-                         "index_analyzer": "html_text"},
-                "Id": {"type": "string",
-                       "store": "yes"}
-            }
-        }
-    }
-    put('/so_post/_mapping', data)
+# def put_mappings():
+#     data = {
+#         "so_post": {
+#             "properties": {
+#                 "Body": {"type": "string",
+#                          "store": "yes",
+#                          "index_analyzer": "html_text"},
+#                 "Id": {"type": "string",
+#                        "store": "yes"}
+#             }
+#         }
+#     }
+#     do_request('put', '/so_post/_mapping', data)
 
 
 def put_doc(doc_dict):
-    put('/so_post/{}'.format(doc_dict['Id']), data=doc_dict)
+    do_request('put', '/so_post/{}'.format(doc_dict['Id']), data=doc_dict)
 
 
 def each_row(path):
