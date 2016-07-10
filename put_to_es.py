@@ -11,6 +11,7 @@ def do_request(method, endpoint, data=None):
         '{}/stackexchange{}'.format(secrets.root_url, endpoint), data=json.dumps(data))
     print 'status:', resp.status_code
     print 'text:', resp.text
+    return resp
 
 
 # def put_settings():
@@ -44,7 +45,7 @@ def do_request(method, endpoint, data=None):
 
 
 def put_doc(doc_dict):
-    do_request('put', '/so_post/{}'.format(doc_dict['Id']), data=doc_dict)
+    return do_request('put', '/so_post/{}'.format(doc_dict['Id']), data=doc_dict)
 
 
 def each_row(path):
@@ -70,4 +71,6 @@ def each_row(path):
 if __name__ == "__main__":
     print 'loading tree...'
     for row_dict in each_row(sys.argv[1] if len(sys.argv) == 2 else 'test.xml'):
-      put_doc(row_dict)
+      resp = put_doc(row_dict)
+      if resp.status_code not in (200, 201):
+        break
