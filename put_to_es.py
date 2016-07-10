@@ -1,9 +1,9 @@
-import json
+import re, sys, json
 
-import xmltodict
 import requests
 
 import secrets
+
 
 
 def do_request(method, endpoint, data=None):
@@ -44,34 +44,34 @@ def put_mappings():
             }
         }
     }
-    put('/so_post/_mapping'.format(secrets.root_url), data)
+    put('/so_post/_mapping', data)
 
 
 def put_doc(doc_dict):
-    doc = {"Body": doc_dict['@Body'], "Id":  doc_dict['@Id']}
-    put('/so_post/{}'.format(doc_dict['@Id']), data=doc)
+    put('/so_post/{}'.format(doc_dict['Id']), data=doc_dict)
 
 
-class g:
-    count = 10
-def xml_item_callback(_, outer_doc_dict):
-    for doc_dict in outer_doc_dict['row']:
-        if g.count <= 0:
-            return False
-        print 'count:', g.count
-        g.count -= 1
-        put_doc(doc_dict)
-    return True
+def each_row(path):
+  with open(path) as f:
+    chunk = ''
+    while True:
+      new_data = f.read(1024)
+      if not new_data:
+        break
+      chunk += new_data
+      while True:
+        match = re.search('<row.+?/>', chunk)
+        if match:
+          kv_strs = re.findall('[a-zA-Z]+=".+?"', match.group())
+          kv_pairs = [kv_str.split('=', 1) for kv_str in kv_strs]
+          kv_pairs = [(p[0], p[1][1:-1]) for p in kv_pairs]
+          yield dict(kv_pairs)
+          chunk = chunk[match.end():]
+        else:
+          break
+
 
 if __name__ == "__main__":
-    put('') # create index
     print 'loading tree...'
-    with open('test.xml') as f:
-        tree = xmltodict.parse(f, item_depth=1, item_callback=xml_item_callback)
-    # requests.post('http://localhost:9200/stackexchange/_close')
-    # createCustomAnalyzer()
-    # createMappings()
-    # requests.post('http://localhost:9200/stackexchange/_open')
-
-
-# Adapted from:  https://github.com/o19s/StackExchangeElasticSearch/blob/master/postToEs.py
+    for row_dict in each_row(sys.argv[1] if len(sys.argv) == 2 else 'test.xml'):
+      put_doc(row_dict)
